@@ -1,0 +1,6 @@
+[Unit]
+Description=Run monitor
+
+[Service]
+Type=oneshot
+ExecStart=/usr/share/operating_systems_laboratories_4/bin/monitor
