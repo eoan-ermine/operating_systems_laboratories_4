@@ -6,8 +6,8 @@
 #include <string_view>
 #include <thread>
 
-#include "common/globals.hpp"
 #include "common/PidFile.hpp"
+#include "common/globals.hpp"
 
 using namespace std::string_view_literals;
 

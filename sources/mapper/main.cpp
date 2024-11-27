@@ -7,13 +7,13 @@
 #include <string_view>
 
 const std::string currentDateTime() {
-    time_t     now = time(0);
-    struct tm  tstruct;
-    tstruct = *localtime(&now);
+  time_t now = time(0);
+  struct tm tstruct;
+  tstruct = *localtime(&now);
 
-    char       buf[80];
-    strftime(buf, sizeof(buf), R"(%Y-%m-%d_%H:%M:%S)", &tstruct);
-    return buf;
+  char buf[80];
+  strftime(buf, sizeof(buf), R"(%Y-%m-%d_%H:%M:%S)", &tstruct);
+  return buf;
 }
 
 std::filesystem::path getMapPath(std::filesystem::path dir, std::size_t PID) {
@@ -33,9 +33,8 @@ int main(int argc, char *argv[]) {
   std::string_view PID_arg = argv[1];
   std::string_view save_dir_path_arg = argv[2];
 
-  auto [_, ec] = std::from_chars(PID_arg.data(),
-                                 PID_arg.data() + PID_arg.size(),
-                                 PID);
+  auto [_, ec] =
+      std::from_chars(PID_arg.data(), PID_arg.data() + PID_arg.size(), PID);
   if (ec != std::errc{}) {
     std::cerr << USAGE << std::endl;
     return 1;
@@ -46,7 +45,8 @@ int main(int argc, char *argv[]) {
   }
 
   auto map_path = getMapPath(save_dir_path_arg, PID);
-  std::ofstream output_stream{ getMapPath(save_dir_path_arg, PID), std::ios::out };
+  std::ofstream output_stream{getMapPath(save_dir_path_arg, PID),
+                              std::ios::out};
   if (!output_stream) {
     std::cerr << "Can't open " << map_path << std::endl;
     return 1;
@@ -54,8 +54,7 @@ int main(int argc, char *argv[]) {
 
   auto pmap_cmdline = std::format("pmap -x {}", PID);
   auto pipe = popen(pmap_cmdline.c_str(), "r");
-  if (!pipe)
-  {
+  if (!pipe) {
     std::cerr << "Couldn't execute " << pmap_cmdline << std::endl;
     return 1;
   }

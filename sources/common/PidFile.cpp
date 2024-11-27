@@ -44,7 +44,9 @@ uint32_t PidFile::getPID() const {
   return 0;
 }
 
-PidFile PidFile::tmp(const std::string_view &name) { return PidFile("/tmp", name); }
+PidFile PidFile::tmp(const std::string_view &name) {
+  return PidFile("/tmp", name);
+}
 
 PidFile PidFile::var(const std::string_view &name) {
   return PidFile("/var/run", name);

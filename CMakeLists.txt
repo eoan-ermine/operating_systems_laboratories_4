@@ -26,11 +26,13 @@ install(
 	DIRECTORY_PERMISSIONS
 	OWNER_WRITE OWNER_READ
 )
+
 install(
 	TARGETS
 	leaker mapper monitor
 	DESTINATION /usr/share/operating_systems_laboratories_4/bin
 )
+
 install(
 	FILES install/operating_systems_laboratories_4.service install/operating_systems_laboratories_4.timer
 	DESTINATION /etc/systemd/system
