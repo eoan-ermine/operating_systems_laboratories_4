@@ -75,14 +75,14 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    for (auto ptr: memory_descriptors) {
+    for (auto ptr : memory_descriptors) {
       delete[] ptr;
     }
   });
 
   while (is_running) {
     unsigned char *ptr = new unsigned char[alloc_size];
-    
+
     {
       std::lock_guard lk(cv_mutex);
       memory_descriptors.push_back(ptr);
