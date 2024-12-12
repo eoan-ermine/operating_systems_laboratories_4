@@ -1,5 +1,7 @@
+#include <atomic>
 #include <charconv>
 #include <chrono>
+#include <condition_variable>
 #include <csignal>
 #include <iostream>
 #include <random>
@@ -49,31 +51,48 @@ int main(int argc, char *argv[]) {
             << std::endl;
 
   std::vector<unsigned char *> memory_descriptors;
+  std::mutex cv_mutex;
+  std::condition_variable cv;
+
   std::random_device random_device;
   std::mt19937 random_engine(random_device());
-  std::uniform_int_distribution free_distribution(0, 100);
   std::uniform_int_distribution sleep_distribution(100, 1000);
 
   is_running = true;
-  while (true) {
-    unsigned char *ptr = new unsigned char[alloc_size];
-    memory_descriptors.push_back(ptr);
-    if (free_distribution(random_engine) <= free_percent) {
-      delete[] ptr;
-      memory_descriptors.pop_back();
+
+  std::thread deallocator([&, random_engine]() mutable {
+    std::uniform_int_distribution free_distribution(0, 100);
+    while (is_running) {
+      std::unique_lock lk(cv_mutex);
+      cv.wait(lk);
+
+      if (memory_descriptors.size() > 0) {
+        auto ptr = memory_descriptors.back();
+        if (free_distribution(random_engine) <= free_percent) {
+          delete[] ptr;
+          memory_descriptors.pop_back();
+        }
+      }
     }
+
+    for (auto ptr: memory_descriptors) {
+      delete[] ptr;
+    }
+  });
+
+  while (is_running) {
+    unsigned char *ptr = new unsigned char[alloc_size];
+    
+    {
+      std::lock_guard lk(cv_mutex);
+      memory_descriptors.push_back(ptr);
+    }
+    cv.notify_one();
+
     std::this_thread::sleep_for(
         std::chrono::nanoseconds(sleep_distribution(random_engine)));
-
-    if (!is_running) {
-      break;
-    }
   }
 
-  std::cout << "Leavinig from allocation loop, cleaning up "
-            << memory_descriptors.size() << " descriptors" << std::endl;
-
-  for (unsigned char *ptr : memory_descriptors) {
-    delete[] ptr;
-  }
+  cv.notify_all();
+  deallocator.join();
 }
